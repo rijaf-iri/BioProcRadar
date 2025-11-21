@@ -1,0 +1,14 @@
+numpy
+scipy
+netCDF4
+xarray
+xradar
+wradlib
+arm_pyart
+dask
+zarr
+geopandas
+matplotlib
+pooch
+Cython
+setuptools
