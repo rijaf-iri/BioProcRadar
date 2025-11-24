@@ -5,16 +5,25 @@ from datetime import datetime
 
 def get_data_dates_dir(data_info):
     dates_dir = data_info['dir']
-    dates_dir = [os.path.join(dates_dir, d) for d in os.listdir(dates_dir)]
+    dates_dir = [
+        os.path.join(dates_dir, d)
+        for d in os.listdir(dates_dir)
+    ]
     if len(dates_dir) == 0:
         return None
-    dates_dir = [os.path.basename(d) for d in dates_dir if os.path.isdir(d)]
+    dates_dir = [
+        os.path.basename(d)
+        for d in dates_dir
+        if os.path.isdir(d)
+    ]
     if len(dates_dir) == 0:
         return None
     tmp_path = []
     for d in dates_dir:
         try:
-            tmp = datetime.strptime(d, data_info['format_dir'])
+            tmp = datetime.strptime(
+                d, data_info['format_dir']
+            )
             tmp_path += [d]
         except:
             continue
@@ -30,20 +39,37 @@ def get_data_file_path(data_info, time_str):
     data_dir = os.path.join(data_info['dir'], date_dir)
     if not os.path.isdir(data_dir):
         return None
-    data_files = glob.glob(f'{data_dir}/{data_info['pattern']}')
+    data_files = glob.glob(
+        f'{data_dir}/{data_info['pattern']}'
+    )
     if len(data_files) == 0:
         return None
-    data_files = [os.path.basename(p) for p in data_files]
-    date_files = extract_filename_dates(data_files, data_info['format_file'])
+    data_files = [
+        os.path.basename(p)
+        for p in data_files
+    ]
+    date_files = extract_filename_dates(
+        data_files, data_info['format_file']
+    )
     if len(date_files) == 0:
         return None
     it = [d is None for d in date_files]
     if all(it):
         return None
-    data_files = [data_files[i] for i, j in enumerate(it) if not j]
-    date_files = [date_files[i] for i, j in enumerate(it) if not j]
-    date_files = [datetime.strptime(f, '%Y%m%d%H%M%S') for f in date_files]
-    it = min(range(len(date_files)), key=lambda i: abs(date_files[i] - time_req))
+    data_files = [
+        data_files[i] for i, j in enumerate(it) if not j
+    ]
+    date_files = [
+        date_files[i] for i, j in enumerate(it) if not j
+    ]
+    date_files = [
+        datetime.strptime(f, '%Y%m%d%H%M%S')
+        for f in date_files
+    ]
+    it = min(
+        range(len(date_files)),
+        key=lambda i: abs(date_files[i] - time_req)
+    )
     file = data_files[it]
 
     return os.path.join(data_dir, file)
@@ -58,34 +84,57 @@ def get_data_files_list(data_info, start_time, end_time):
     dates_dir = get_data_dates_dir(data_info)
     if dates_dir is None:
         return None
-    dt_dir = [datetime.strptime(d, data_info['format_dir']) for d in dates_dir]
+    dt_dir = [
+        datetime.strptime(d, data_info['format_dir'])
+        for d in dates_dir
+    ]
     dt_dir = [d.date() for d in  dt_dir]
-    it = [d >= start_date and d <= end_date for d in dt_dir]
+    it = [
+        d >= start_date and d <= end_date
+        for d in dt_dir
+    ]
     if not any(it):
         return None
-    dates_dir = [dates_dir[i] for i, j in enumerate(it) if j]
+    dates_dir = [
+        dates_dir[i] for i, j in enumerate(it) if j
+    ]
 
     list_out = []
     for d in dates_dir:
         data_dir = os.path.join(data_info['dir'], d)
-        data_files = glob.glob(f'{data_dir}/{data_info['pattern']}')
+        data_files = glob.glob(
+            f'{data_dir}/{data_info['pattern']}'
+        )
         if len(data_files) == 0:
             continue
-        data_files = sorted([os.path.basename(p) for p in data_files])
-        date_files = extract_filename_dates(data_files, data_info['format_file'])
+        data_files = sorted([
+            os.path.basename(p) for p in data_files
+        ])
+        date_files = extract_filename_dates(
+            data_files, data_info['format_file']
+        )
         if len(date_files) == 0:
             continue
         it = [d is None for d in date_files]
         if all(it):
             continue
-        data_files = [data_files[i] for i, j in enumerate(it) if not j]
-        date_files = [date_files[i] for i, j in enumerate(it) if not j]
-        date_files = [datetime.strptime(f, '%Y%m%d%H%M%S') for f in date_files]
+        data_files = [
+            data_files[i] for i, j in enumerate(it) if not j
+        ]
+        date_files = [
+            date_files[i] for i, j in enumerate(it) if not j
+        ]
+        date_files = [
+            datetime.strptime(f, '%Y%m%d%H%M%S')
+            for f in date_files
+        ]
 
         it = [t >= start and t <= end for t in date_files]
         if not any(it):
             continue
-        data_files = [data_files[i] for i, j in enumerate(it) if j]
+        data_files = [
+            data_files[i] for i, j in enumerate(it) if j
+        ]
         list_out += [{'dir': d, 'files': data_files}]
     if len(list_out) == 0:
         return None
@@ -106,7 +155,9 @@ def double_backslash_non_alnum_list(strings):
     return escaped
 
 def extract_filename_dates(filenames, fileformat):
-    expr = [m.start() for m in re.finditer('%', fileformat)]
+    expr = [
+        m.start() for m in re.finditer('%', fileformat)
+    ]
     length_expr = [2] * len(expr)
     ret = []
     if expr:

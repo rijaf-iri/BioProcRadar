@@ -5,6 +5,7 @@ xarray
 xradar
 wradlib
 arm_pyart
+numcodecs
 dask
 zarr
 geopandas
