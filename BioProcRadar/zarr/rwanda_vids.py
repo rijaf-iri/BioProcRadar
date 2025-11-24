@@ -7,7 +7,6 @@ from datetime import (
         timedelta,
         timezone
     )
-from dask import delayed
 from ..util import *
 from .zarr_vids import (
         create_zarr_vid_dataset,
@@ -43,9 +42,8 @@ def production_rwanda_vid(
     date_times = split_start_end_time(
         start_time, end_time, 3
     )
-    tasks = []
     for times in date_times:
-        task = delayed(wrapper_rwanda_vids)(
+        wrapper_rwanda_vids(
             bioradar_dir,
             times['start'],
             times['end'],
@@ -53,12 +51,6 @@ def production_rwanda_vid(
             info['vid_info'],
             info['zarr_info'],
             info['log_file']
-        )
-        tasks.append(task)
-
-    compute(*tasks,
-            scheduler='processes',
-            num_workers=4
         )
     return 0
 
@@ -98,9 +90,8 @@ def process_rwanda_vids(
     date_times = split_start_end_time(
         start_time, end_time, 3
     )
-    tasks = []
     for times in date_times:
-        task = delayed(wrapper_rwanda_vids)(
+        wrapper_rwanda_vids(
             bioradar_dir,
             times['start'],
             times['end'],
@@ -109,9 +100,7 @@ def process_rwanda_vids(
             info['zarr_info'],
             info['log_file']
         )
-        tasks.append(task)
-
-    return tasks
+    return 0
 
 def wrapper_rwanda_vids(
         bioradar_dir, start_time,
