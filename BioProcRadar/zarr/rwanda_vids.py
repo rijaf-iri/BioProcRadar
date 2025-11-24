@@ -119,7 +119,6 @@ def wrapper_rwanda_vids(
         vid_info, zarr_info,
         log_file
     ):
-
     vid_bird = get_vid_species_files(
         'bird', vid_info, start_time,
         end_time, radar_id
