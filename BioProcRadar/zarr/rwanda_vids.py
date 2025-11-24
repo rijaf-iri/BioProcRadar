@@ -7,7 +7,7 @@ from datetime import (
         timedelta,
         timezone
     )
-from dask import delayed, compute
+from dask import delayed
 from ..util import *
 from .zarr_vids import (
         create_zarr_vid_dataset,
@@ -117,11 +117,7 @@ def process_rwanda_vids(
         )
         tasks.append(task)
 
-    compute(*tasks,
-            scheduler='processes',
-            num_workers=4
-        )
-    return 0
+    return tasks
 
 def wrapper_rwanda_vids(
         bioradar_dir, start_time,
