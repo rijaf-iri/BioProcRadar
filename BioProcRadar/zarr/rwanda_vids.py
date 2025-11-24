@@ -15,8 +15,7 @@ from .zarr_vids import (
     )
 
 def production_rwanda_vid(
-        bioradar_dir, radar_id=1,
-        parallel=False
+        bioradar_dir, radar_id=1
     ):
     info = _get_info_vids(bioradar_dir)
     if info is None:
@@ -53,8 +52,7 @@ def production_rwanda_vid(
             radar_id,
             info['vid_info'],
             info['zarr_info'],
-            info['log_file'],
-            parallel
+            info['log_file']
         )
         tasks.append(task)
 
@@ -65,8 +63,7 @@ def production_rwanda_vid(
     return 0
 
 def process_rwanda_vid(
-        bioradar_dir, time,
-        radar_id=1, parallel=False
+        bioradar_dir, time, radar_id=1
     ):
     info = _get_info_vids(bioradar_dir)
     if info is None:
@@ -87,14 +84,12 @@ def process_rwanda_vid(
         radar_id,
         info['vid_info'],
         info['zarr_info'],
-        info['log_file'],
-        parallel
+        info['log_file']
     )
 
 def process_rwanda_vids(
         bioradar_dir, start_time,
-        end_time, radar_id=1,
-        parallel=False
+        end_time, radar_id=1
     ):
     info = _get_info_vids(bioradar_dir)
     if info is None:
@@ -112,8 +107,7 @@ def process_rwanda_vids(
             radar_id,
             info['vid_info'],
             info['zarr_info'],
-            info['log_file'],
-            parallel
+            info['log_file']
         )
         tasks.append(task)
 
@@ -123,7 +117,7 @@ def wrapper_rwanda_vids(
         bioradar_dir, start_time,
         end_time, radar_id,
         vid_info, zarr_info,
-        log_file, parallel
+        log_file
     ):
 
     vid_bird = get_vid_species_files(
@@ -163,16 +157,14 @@ def wrapper_rwanda_vids(
             vid_insect['files'],
             vid_bird['files'],
             zarr_path,
-            zarr_info['chunck'],
-            parallel
+            zarr_info['chunck']
         )
     else:
         update_zarr_vid_dataset(
             vid_insect,
             vid_bird,
             zarr_path,
-            zarr_info['chunck'],
-            parallel
+            zarr_info['chunck']
         )
 
     _update_vid_timerange(

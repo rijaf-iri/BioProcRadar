@@ -5,14 +5,13 @@ from datetime import datetime
 
 def create_zarr_vid_dataset(
         insect_files, bird_files,
-        zarr_path, zarr_chunk,
-        parallel
+        zarr_path, zarr_chunk
     ):
     ds_insect = _read_vid_dataset(
-        insect_files, 'insect', parallel
+        insect_files, 'insect'
     )
     ds_bird = _read_vid_dataset(
-        bird_files, 'bird', parallel 
+        bird_files, 'bird' 
     )
     ds = xr.concat(
         [ds_insect, ds_bird], dim='species'
@@ -34,8 +33,7 @@ def create_zarr_vid_dataset(
 
 def update_zarr_vid_dataset(
         vid_insect, vid_bird,
-        zarr_path, zarr_chunk,
-        parallel
+        zarr_path, zarr_chunk
     ):
     ds = xr.open_zarr(
         zarr_path, consolidated=False
@@ -55,9 +53,7 @@ def update_zarr_vid_dataset(
 
     if new_insect and new_bird:
         ds_insect = _read_vid_dataset(
-            files_insect['append'],
-            'insect',
-            parallel
+            files_insect['append'], 'insect'
         )
         if not _is_same_extent(ds, ds_insect):
             msg = 'Old and new insect datasets do not have'
@@ -65,9 +61,7 @@ def update_zarr_vid_dataset(
             raise ValueError(msg)
 
         ds_bird = _read_vid_dataset(
-            files_bird['append'],
-            'bird',
-            parallel
+            files_bird['append'], 'bird'
         )
         if not _is_same_extent(ds, ds_bird):
             msg = 'Old and new bird datasets do not have'
@@ -117,8 +111,12 @@ def _replace_dataset(
     }
 
     ds_new = xr.open_dataset(
-        file, engine='netcdf4'
+        file,
+        engine='h5netcdf',
+        decode_cf=False
     )
+    ds_new = xr.decode_cf(ds_new)
+
     if not _is_same_extent(ds, ds_new):
         msg = 'Old and new datasets do not have'
         msg = f'{msg} the same lat/lon dimensions'
@@ -168,7 +166,7 @@ def compressor_encoding(ds: xr.Dataset):
     }
     return encoding
 
-def _read_vid_dataset(files, species, parallel):
+def _read_vid_dataset(files, species):
     species_map = {
         'insect': 0,
         'bird': 1
@@ -177,8 +175,10 @@ def _read_vid_dataset(files, species, parallel):
         files,
         combine='nested',
         concat_dim='time',
-        parallel=parallel
+        engine='h5netcdf',
+        decode_cf=False
     )
+    ds = xr.decode_cf(ds)
     ds = ds.expand_dims({
         'species': [species_map[species]]
     })
