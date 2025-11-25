@@ -43,14 +43,15 @@ def production_rwanda_vid(
         start_time, end_time, 3
     )
     for times in date_times:
+        info1 = info.copy()
         wrapper_rwanda_vids(
             bioradar_dir,
             times['start'],
             times['end'],
             radar_id,
-            info['vid_info'],
-            info['zarr_info'],
-            info['log_file']
+            info1['vid_info'],
+            info1['zarr_info'],
+            info1['log_file']
         )
     return 0
 
@@ -91,14 +92,15 @@ def process_rwanda_vids(
         start_time, end_time, 3
     )
     for times in date_times:
+        info1 = info.copy()
         wrapper_rwanda_vids(
             bioradar_dir,
             times['start'],
             times['end'],
             radar_id,
-            info['vid_info'],
-            info['zarr_info'],
-            info['log_file']
+            info1['vid_info'],
+            info1['zarr_info'],
+            info1['log_file']
         )
     return 0
 
