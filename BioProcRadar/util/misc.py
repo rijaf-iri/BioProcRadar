@@ -7,7 +7,7 @@ def format_out_msg(msg, log_file, append=True):
     hr = '*********************************'
     mode = 'a' if append else 'w'
     with open(log_file, mode) as file:
-        file.write(f'Time: {dates}\n{msg}{hr}\n')
+        file.write(f'Time: {dates}\n{msg}\n{hr}\n')
 
 def get_log_file(bioradar_dir, log_dir, prefix):
     dir_log = os.path.join(

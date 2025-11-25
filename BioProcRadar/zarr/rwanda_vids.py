@@ -40,7 +40,7 @@ def production_rwanda_vid(
     end_time = end_time.strftime(frmt)
 
     date_times = split_start_end_time(
-        start_time, end_time, 3
+        start_time, end_time, 1
     )
     for times in date_times:
         info1 = info.copy()
@@ -89,7 +89,7 @@ def process_rwanda_vids(
         return None
 
     date_times = split_start_end_time(
-        start_time, end_time, 3
+        start_time, end_time, 1
     )
     for times in date_times:
         info1 = info.copy()
