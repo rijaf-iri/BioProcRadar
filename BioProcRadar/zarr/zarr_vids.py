@@ -28,7 +28,8 @@ def create_zarr_vid_dataset(
         mode='w',
         encoding=encoding,
         consolidated=False,
-        zarr_format=3
+        zarr_format=3,
+        align_chunks=True
     )
 
 def update_zarr_vid_dataset(
@@ -80,7 +81,8 @@ def update_zarr_vid_dataset(
             mode='a',
             append_dim='time',
             consolidated=False,
-            zarr_format=3
+            zarr_format=3,
+            align_chunks=True
         )
 
     if rep_insect and rep_bird:
@@ -150,9 +152,9 @@ def _replace_dataset(
             'lon': slice(0, ds.sizes['lon'])
         },
         consolidated=False,
-        zarr_format=3
+        zarr_format=3,
+        align_chunks=True
     )
-
 
 def compressor_encoding(ds: xr.Dataset):
     compressor = BloscCodec(
