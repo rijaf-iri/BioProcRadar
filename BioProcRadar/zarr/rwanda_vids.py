@@ -135,9 +135,9 @@ def wrapper_rwanda_vids(
         os.makedirs(zarr_info['dir'])
         ds_new = True
 
-    zarr_info['file'] = zarr_info['file'] % (radar_id)
+    zarr_dirfile = zarr_info['file'] % (radar_id)
     zarr_path = os.path.join(
-        zarr_info['dir'], zarr_info['file']
+        zarr_info['dir'], zarr_dirfile
     )
     if not os.path.exists(zarr_path):
         ds_new = True
