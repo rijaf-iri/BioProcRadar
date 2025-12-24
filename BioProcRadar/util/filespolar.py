@@ -10,6 +10,7 @@ from .filesdirs import (
         get_data_dates_dir,
         get_dir_date_range
      )
+from .cdb import *
 
 def update_rpolar_timerange(
         bioradar_dir, radar_id=1
