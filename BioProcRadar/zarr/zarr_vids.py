@@ -1,6 +1,5 @@
 import numpy as np
 import xarray as xr
-from zarr.codecs import BloscCodec
 from datetime import datetime
 
 def create_zarr_vid_dataset(
@@ -21,15 +20,12 @@ def create_zarr_vid_dataset(
     )
     ds = _add_vid_metadata(ds)
     ds = ds.chunk(zarr_chunk)
-    encoding = compressor_encoding(ds)
 
     ds.to_zarr(
         zarr_path,
         mode='w',
-        encoding=encoding,
         consolidated=False,
-        zarr_format=3,
-        align_chunks=True
+        zarr_format=3
     )
 
 def update_zarr_vid_dataset(
@@ -81,8 +77,7 @@ def update_zarr_vid_dataset(
             mode='a',
             append_dim='time',
             consolidated=False,
-            zarr_format=3,
-            align_chunks=True
+            zarr_format=3
         )
 
     if rep_insect and rep_bird:
@@ -152,21 +147,8 @@ def _replace_dataset(
             'lon': slice(0, ds.sizes['lon'])
         },
         consolidated=False,
-        zarr_format=3,
-        align_chunks=True
+        zarr_format=3
     )
-
-def compressor_encoding(ds: xr.Dataset):
-    compressor = BloscCodec(
-        cname='zstd',
-        clevel=5,
-        shuffle='shuffle'
-    )
-    encoding = {
-        var: {'compressors': [compressor]}
-        for var in ds.data_vars
-    }
-    return encoding
 
 def _read_vid_dataset(files, species):
     species_map = {
@@ -241,4 +223,3 @@ def _get_species_files(ds_time, vid_species):
             'replace': files_rep,
             'append': files_new
         }
-

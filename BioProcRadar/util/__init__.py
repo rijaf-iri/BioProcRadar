@@ -1,4 +1,5 @@
 from .filesdirs import *
+from .filespolar import *
 from .misc import *
 from .cdb import *
 

@@ -40,7 +40,7 @@ def get_data_file_path(data_info, time_str):
     if not os.path.isdir(data_dir):
         return None
     data_files = glob.glob(
-        f'{data_dir}/{data_info['pattern']}'
+        f'{data_dir}/{data_info['pattern1']}'
     )
     if len(data_files) == 0:
         return None
@@ -60,9 +60,6 @@ def get_data_file_path(data_info, time_str):
         data_files[i] for i, j in enumerate(it) if not j
     ]
     date_files = [
-        date_files[i] for i, j in enumerate(it) if not j
-    ]
-    date_files = [
         datetime.strptime(f, '%Y%m%d%H%M%S')
         for f in date_files
     ]
@@ -73,6 +70,34 @@ def get_data_file_path(data_info, time_str):
     file = data_files[it]
 
     return os.path.join(data_dir, file)
+
+def get_dir_date_range(data_info, date_str):
+    data_dir = os.path.join(data_info['dir'], date_str)
+    data_files = glob.glob(
+        f'{data_dir}/{data_info['pattern1']}'
+    )
+    if len(data_files) == 0:
+        return None
+    data_files = [
+        os.path.basename(p)
+        for p in data_files
+    ]
+    date_files = extract_filename_dates(
+        data_files, data_info['format_file']
+    )
+    if len(date_files) == 0:
+        return None
+    it = [d is None for d in date_files]
+    if all(it):
+        return None
+    date_files = [
+        date_files[i] for i, j in enumerate(it) if not j
+    ]
+    date_files = [
+        datetime.strptime(f, '%Y%m%d%H%M%S')
+        for f in date_files
+    ]
+    return min(date_files), max(date_files)
 
 def get_data_files_list(data_info, start_time, end_time):
     format_time = '%Y-%m-%d %H:%M:%S'
@@ -103,7 +128,7 @@ def get_data_files_list(data_info, start_time, end_time):
     for d in dates_dir:
         data_dir = os.path.join(data_info['dir'], d)
         data_files = glob.glob(
-            f'{data_dir}/{data_info['pattern']}'
+            f'{data_dir}/{data_info['pattern1']}'
         )
         if len(data_files) == 0:
             continue
