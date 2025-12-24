@@ -3,7 +3,8 @@ import numpy as np
 from datetime import datetime
 from .misc import (
         load_yaml_file,
-        format_out_msg
+        format_out_msg,
+        get_log_file
      )
 from .filesdirs import (
         get_data_dates_dir,
