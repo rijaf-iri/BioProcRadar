@@ -69,7 +69,7 @@ def _update_rpolar_timerange(
             (radar_id, min_datetime, max_datetime)
         )
     else:
-        if start_time < trg[0]['start_time']:
+        if min_datetime < trg[0]['start_time']:
             executeSQLCmd(cursor,
                 """
                 UPDATE rpolar_timerange
@@ -79,7 +79,7 @@ def _update_rpolar_timerange(
                 (min_datetime, radar_id)
             )
 
-        if end_time > trg[0]['end_time']:
+        if max_datetime > trg[0]['end_time']:
             executeSQLCmd(cursor,
                 """
                 UPDATE rpolar_timerange
