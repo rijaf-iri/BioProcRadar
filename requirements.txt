@@ -13,3 +13,4 @@ matplotlib
 pooch
 Cython
 setuptools
+psycopg2-binary
