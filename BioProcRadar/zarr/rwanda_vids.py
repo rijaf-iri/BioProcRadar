@@ -204,6 +204,7 @@ def get_vid_species_files(
         vid_species['dir'], f'radar_{radar_id}'
     )
     vid_species['pattern'] = vid_species['pattern'] % (species)
+    vid_species['pattern1'] = vid_species['pattern']
     vid_species['format_file'] = re.sub(
         r'\*', species, vid_species['format_file']
     )
