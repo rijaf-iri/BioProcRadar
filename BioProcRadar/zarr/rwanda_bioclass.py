@@ -7,11 +7,6 @@ from datetime import (
     )
 import BioModRadar as bmod
 from ..util import *
-# from .zarr_bioclass import (
-#         create_zarr_bioclass_dataset,
-#         update_zarr_bioclass_dataset,
-#         _update_bioclass_timerange
-#     )
 from .zarr_data_grid import (
         create_zarr_data_grid,
         update_zarr_data_grid,
@@ -167,45 +162,17 @@ def wrapper_rwanda_bios(
                 grid, zarr_path,
                 info['class']['chunck']
             )
-            # create_zarr_bioclass_dataset(
-            #     grid, zarr_path,
-            #     info['class']['chunck']
-            # )
         else:
             update_zarr_data_grid(
                 grid, zarr_path,
                 info['class']['chunck']
             )
-            # update_zarr_bioclass_dataset(
-            #     grid, zarr_path,
-            #     info['class']['chunck']
-            # )
 
         update_timerange_data_grid(
             bioradar_dir, zarr_path,
             'bioclass_timerange', radar_id
         )
-        # _update_bioclass_timerange(
-        #     bioradar_dir, zarr_path, radar_id
-        # )
-
     return 0
-
-# def _get_polar_files(info, start_time, end_time):
-#     data_files = get_data_files_list(
-#             info['polar'], start_time, end_time
-#         )
-#     if data_files is None:
-#         msg = 'No data found.'
-#         format_out_msg(msg, info['log_file'])
-#         return None
-
-#     path_files = []
-#     for d in data_files:
-#         data_dir = os.path.join(info['polar']['dir'], d['dir'])
-#         for f in d['files']:
-#             path_files += [os.path.join(data_dir, f)]
-#     return path_files
 
 def _get_info_bioclass(bioradar_dir, radar_id):
     config_dir = os.path.join(
