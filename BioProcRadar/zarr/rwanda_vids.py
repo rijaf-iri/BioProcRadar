@@ -266,7 +266,6 @@ def _update_vid_timerange(
     )
     t_max = ds.time.max().values
     t_max = t_max.astype('datetime64[s]')
-    # end_time = t_max.item()
     end_time = t_max.astype(datetime)
     t_min = ds.time.min().values
     t_min = t_min.astype('datetime64[s]')

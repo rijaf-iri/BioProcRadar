@@ -214,3 +214,17 @@ def extract_filename_dates(filenames, fileformat):
     if ret:
         ret = [None if re.search(r'[^0-9]', r) else r for r in ret]
     return ret
+
+def get_polar_path_files(data_info, start_time, end_time):
+    data_files = get_data_files_list(
+            data_info, start_time, end_time
+        )
+    if data_files is None:
+        return None
+
+    path_files = []
+    for d in data_files:
+        data_dir = os.path.join(data_info['dir'], d['dir'])
+        for f in d['files']:
+            path_files += [os.path.join(data_dir, f)]
+    return path_files

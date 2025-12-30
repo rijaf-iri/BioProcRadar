@@ -7,21 +7,16 @@ from datetime import (
     )
 import BioModRadar as bmod
 from ..util import *
-# from .zarr_bioclass import (
-#         create_zarr_bioclass_dataset,
-#         update_zarr_bioclass_dataset,
-#         _update_bioclass_timerange
-#     )
 from .zarr_data_grid import (
         create_zarr_data_grid,
         update_zarr_data_grid,
         update_timerange_data_grid
     )
 
-def production_rwanda_bio(
+def production_rwanda_rgrid(
         bioradar_dir, radar_id=1
     ):
-    info = _get_info_bioclass(bioradar_dir, radar_id)
+    info = _get_info_rgrid(bioradar_dir, radar_id)
     if info is None:
         return None
 
@@ -29,7 +24,7 @@ def production_rwanda_bio(
     t_end = queryDB_json(cursor,
             """
             SELECT end_time
-            FROM bioclass_timerange
+            FROM rgrid_timerange
             WHERE radar_id=%s;
             """,
             (radar_id,)
@@ -52,17 +47,17 @@ def production_rwanda_bio(
         format_out_msg(msg, info['log_file'])
         return None
 
-    wrapper_rwanda_bios(
+    wrapper_rwanda_rgrids(
         bioradar_dir,
         data_files,
         radar_id,
         info
     )
 
-def process_rwanda_bio(
+def process_rwanda_rgrid(
         bioradar_dir, time, radar_id=1
     ):
-    info = _get_info_bioclass(bioradar_dir, radar_id)
+    info = _get_info_rgrid(bioradar_dir, radar_id)
     if info is None:
         return None
 
@@ -82,20 +77,21 @@ def process_rwanda_bio(
         format_out_msg(msg, info['log_file'])
         return None
 
-    wrapper_rwanda_bios(
+    wrapper_rwanda_rgrids(
         bioradar_dir,
         data_files,
         radar_id,
         info
     )
 
-def process_rwanda_bios(
+def process_rwanda_rgrids(
         bioradar_dir, start_time,
         end_time, radar_id=1
     ):
-    info = _get_info_bioclass(bioradar_dir, radar_id)
+    info = _get_info_rgrid(bioradar_dir, radar_id)
     if info is None:
         return None
+
     data_files = get_polar_path_files(
         info['polar'], start_time, end_time
     )
@@ -104,14 +100,14 @@ def process_rwanda_bios(
         format_out_msg(msg, info['log_file'])
         return None
 
-    wrapper_rwanda_bios(
+    wrapper_rwanda_rgrids(
         bioradar_dir,
         data_files,
         radar_id,
         info
     )
 
-def wrapper_rwanda_bios(
+def wrapper_rwanda_rgrids(
         bioradar_dir, data_files,
         radar_id, info
     ):
@@ -120,44 +116,29 @@ def wrapper_rwanda_bios(
                    'vel': 'VRADH', 'sw': 'WRADH'}
     volume_type = 'rwanda-odim-h5'
     sweeps = np.arange(0, 11)
-    texture_fields = False
-    features = ['DBZH', 'PHIDP', 'RHOHV', 'ZDR', 'VRADH', 'WRADH']
-    # texture_fields = True
-    # features = ['DBZH_MED', 'PHIDP_MED', 'RHOHV_MED', 'ZDR_MED', 'VRADH_MED', 'WRADH_MED']
-    file_model = os.path.join(info['model']['dir'], info['model']['job'])
-    fields_class = ['DR_CLASS', 'BIO_CLASS']
 
     ds_new = False
-    if not os.path.isdir(info['class']['dir']):
-        os.makedirs(info['class']['dir'])
+    if not os.path.isdir(info['grid']['dir']):
+        os.makedirs(info['grid']['dir'])
         ds_new = True
 
-    zarr_dirfile = info['class']['file'] % (radar_id)
+    zarr_dirfile = info['grid']['file'] % (radar_id)
     zarr_path = os.path.join(
-        info['class']['dir'], zarr_dirfile
+        info['grid']['dir'], zarr_dirfile
     )
     if not os.path.exists(zarr_path):
         ds_new = True
 
     for file_path in data_files:
         try:
-            radar_mod, fields = bmod.build_features_predict(
-                                        file_path,
-                                        volume_type,
-                                        sweeps,
-                                        fields_dict,
-                                        spatial_stat_fields=False,
-                                        # spatial_stat_fields=True,
-                                        texture_fields=texture_fields,
-                                        dr_thres=-12,
-                                        rho_thres=0.9,
-                                        ref_thres=30
-                                    )
-            radar_mod = bmod.predict_ML_models(
-                radar_mod, features, file_model
+            radar = bmod.read_radar_data(
+                file_path, sweeps,
+                volume_type, fields_dict
             )
             grid = bmod.grid_radar_data(
-                radar_mod, fields_class, vertical_res=250.
+                radar,
+                list(radar.fields),
+                vertical_res=250.
             )
         except:
             continue
@@ -165,49 +146,22 @@ def wrapper_rwanda_bios(
         if ds_new:
             create_zarr_data_grid(
                 grid, zarr_path,
-                info['class']['chunck']
+                info['grid']['chunck']
             )
-            # create_zarr_bioclass_dataset(
-            #     grid, zarr_path,
-            #     info['class']['chunck']
-            # )
         else:
             update_zarr_data_grid(
                 grid, zarr_path,
-                info['class']['chunck']
+                info['grid']['chunck']
             )
-            # update_zarr_bioclass_dataset(
-            #     grid, zarr_path,
-            #     info['class']['chunck']
-            # )
 
         update_timerange_data_grid(
             bioradar_dir, zarr_path,
-            'bioclass_timerange', radar_id
+            'rgrid_timerange', radar_id
         )
-        # _update_bioclass_timerange(
-        #     bioradar_dir, zarr_path, radar_id
-        # )
 
     return 0
 
-# def _get_polar_files(info, start_time, end_time):
-#     data_files = get_data_files_list(
-#             info['polar'], start_time, end_time
-#         )
-#     if data_files is None:
-#         msg = 'No data found.'
-#         format_out_msg(msg, info['log_file'])
-#         return None
-
-#     path_files = []
-#     for d in data_files:
-#         data_dir = os.path.join(info['polar']['dir'], d['dir'])
-#         for f in d['files']:
-#             path_files += [os.path.join(data_dir, f)]
-#     return path_files
-
-def _get_info_bioclass(bioradar_dir, radar_id):
+def _get_info_rgrid(bioradar_dir, radar_id):
     config_dir = os.path.join(
         bioradar_dir, 'BioConfigRadar'
     )
@@ -215,7 +169,7 @@ def _get_info_bioclass(bioradar_dir, radar_id):
         config_dir, 'config'
     )
     log_file = get_log_file(
-        bioradar_dir, 'logs_bioclass', 'bio_zarr'
+        bioradar_dir, 'logs_grid', 'grid_zarr'
     )
 
     yaml_file = os.path.join(
@@ -230,7 +184,6 @@ def _get_info_bioclass(bioradar_dir, radar_id):
     polar_info = data_info['radar'][f'polar_{radar_id}']
     return {
         'polar': polar_info,
-        'class': data_info['class'],
-        'model': data_info['models'],
+        'grid': data_info['grid'],
         'log_file': log_file
     }
