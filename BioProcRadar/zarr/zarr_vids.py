@@ -12,9 +12,17 @@ def create_zarr_vid_dataset(
     ds_bird = _read_vid_dataset(
         bird_files, 'bird' 
     )
-    ds = xr.concat(
-        [ds_insect, ds_bird], dim='species'
-    )
+    if ds_insect and ds_bird:
+        ds = xr.concat(
+            [ds_insect, ds_bird], dim='species'
+        )
+    elif ds_insect:
+        ds = ds_insect
+    elif ds_bird:
+        ds = ds_bird
+    else:
+        return None
+
     ds = ds.assign_coords(
         species=ds.species.astype('int8')
     )
@@ -52,22 +60,32 @@ def update_zarr_vid_dataset(
         ds_insect = _read_vid_dataset(
             files_insect['append'], 'insect'
         )
-        if not _is_same_extent(ds, ds_insect):
-            msg = 'Old and new insect datasets do not have'
-            msg = f'{msg} the same lat/lon dimensions'
-            raise ValueError(msg)
+        if ds_insect:
+            if not _is_same_extent(ds, ds_insect):
+                msg = 'Old and new insect datasets do not have'
+                msg = f'{msg} the same lat/lon dimensions'
+                raise ValueError(msg)
 
         ds_bird = _read_vid_dataset(
             files_bird['append'], 'bird'
         )
-        if not _is_same_extent(ds, ds_bird):
-            msg = 'Old and new bird datasets do not have'
-            msg = f'{msg} the same lat/lon dimensions'
-            raise ValueError(msg)
+        if ds_bird:
+            if not _is_same_extent(ds, ds_bird):
+                msg = 'Old and new bird datasets do not have'
+                msg = f'{msg} the same lat/lon dimensions'
+                raise ValueError(msg)
 
-        ds_new = xr.concat(
-            [ds_insect, ds_bird], dim='species'
-        )
+        if ds_insect and ds_bird:
+            ds_new = xr.concat(
+                [ds_insect, ds_bird], dim='species'
+            )
+        elif ds_insect:
+            ds_new = ds_insect
+        elif ds_bird:
+            ds_new = ds_bird
+        else:
+            return None
+
         ds_new = ds_new.assign_coords(
             species=ds_new.species.astype('int8')
         )
@@ -112,6 +130,11 @@ def _replace_dataset(
         engine='h5netcdf',
         decode_cf=False
     )
+    lon = ds_new.get_index('lon')
+    dup = lon.duplicated(keep='first')
+    if any(dup):
+        return None
+
     ds_new = xr.decode_cf(ds_new)
 
     if not _is_same_extent(ds, ds_new):
@@ -155,18 +178,41 @@ def _read_vid_dataset(files, species):
         'insect': 0,
         'bird': 1
     }
-    ds = xr.open_mfdataset(
-        files,
-        combine='nested',
-        concat_dim='time',
-        engine='h5netcdf',
-        decode_cf=False
-    )
+    ds = _read_vid_nc(files)
+    if ds is None:
+        return None
     ds = xr.decode_cf(ds)
     ds = ds.expand_dims({
         'species': [species_map[species]]
     })
     return ds
+
+# def _read_vid_nc(files):
+#     return xr.open_mfdataset(
+#         files,
+#         combine='nested',
+#         concat_dim='time',
+#         engine='h5netcdf',
+#         decode_cf=False
+#     )
+
+def _read_vid_nc(files):
+    ds = []
+    dup = []
+    for file in files:
+        nc = xr.open_dataset(
+            file,
+            engine='h5netcdf',
+            decode_cf=False
+        )
+        ds += [nc]
+        lon = nc.get_index('lon')
+        dup += [lon.duplicated(keep='first')]
+    dup = [any(d) for d in dup]
+    ds = [ds[i] for i, d in enumerate(dup) if not d]
+    if len(ds) == 0:
+        return None
+    return xr.concat(ds, dim='time')
 
 def _add_vid_metadata(ds: xr.Dataset):
     ds.attrs.update({
