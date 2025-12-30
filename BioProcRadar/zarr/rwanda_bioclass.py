@@ -5,11 +5,12 @@ from datetime import (
         timedelta,
         timezone
     )
-from ..util import *
 import BioModRadar as bmod
+from ..util import *
 from .zarr_bioclass import (
         create_zarr_bioclass_dataset,
-        update_zarr_bioclass_dataset
+        update_zarr_bioclass_dataset,
+        _update_bioclass_timerange
     )
 
 def production_rwanda_bio(

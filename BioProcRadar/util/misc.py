@@ -55,3 +55,13 @@ def split_start_end_time(
         i += 1
 
     return intervals
+
+def cftime2datetime(time):
+    return datetime(
+                    time.year,
+                    time.month,
+                    time.day,
+                    time.hour,
+                    time.minute,
+                    time.second
+                    )

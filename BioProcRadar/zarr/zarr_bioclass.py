@@ -2,6 +2,8 @@ import copy
 import numpy as np
 import xarray as xr
 import netCDF4 as nc
+from datetime import datetime
+from ..util import *
 
 def create_zarr_bioclass_dataset(
         grid, zarr_path, zarr_chunk
@@ -91,3 +93,69 @@ def _bioclass_time_encoding():
         'calendar': 'standard',
         'dtype': 'int64'
     }
+
+def _update_bioclass_timerange(
+        bioradar_dir, zarr_path, radar_id
+    ):
+    time_encoding = _bioclass_time_encoding()
+    ds = xr.open_zarr(
+        zarr_path, consolidated=False
+    )
+    t_max = nc.num2date(
+        ds.time.max().values,
+        units=time_encoding['units'],
+        calendar=time_encoding['calendar']
+    )
+    end_time = cftime2datetime(t_max)
+    t_min = nc.num2date(
+        ds.time.min().values,
+        units=time_encoding['units'],
+        calendar=time_encoding['calendar']
+    )
+    start_time = cftime2datetime(t_min)
+
+    cursor, conn = bioDBRadar(bioradar_dir)
+
+    trg = queryDB_json(cursor,
+            """
+            SELECT start_time, end_time
+            FROM bioclass_timerange
+            WHERE radar_id=%s;
+            """,
+            (radar_id,)
+        )
+
+    if len(trg) == 0:
+        executeSQLCmd(cursor,
+            """
+            INSERT INTO bioclass_timerange 
+              (radar_id, start_time, end_time)
+            VALUES 
+              (%s, %s, %s);
+            """,
+            (radar_id, start_time, end_time)
+        )
+    else:
+        if start_time < trg[0]['start_time']:
+            executeSQLCmd(cursor,
+                """
+                UPDATE bioclass_timerange
+                SET start_time = %s
+                WHERE radar_id = %s;
+                """,
+                (start_time, radar_id)
+            )
+
+        if end_time > trg[0]['end_time']:
+            executeSQLCmd(cursor,
+                """
+                UPDATE bioclass_timerange
+                SET end_time = %s
+                WHERE radar_id = %s;
+                """,
+                (end_time, radar_id)
+            )
+
+    cursor.close()
+    conn.close()
+    return 0
