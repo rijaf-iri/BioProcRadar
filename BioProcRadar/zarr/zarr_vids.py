@@ -76,8 +76,11 @@ def update_zarr_vid_dataset(
                 raise ValueError(msg)
 
         if ds_insect and ds_bird:
-            ds_new = xr.concat(
-                [ds_insect, ds_bird], dim='species'
+            # ds_new = xr.concat(
+            #     [ds_insect, ds_bird], dim='species'
+            # )
+            ds_new = xr.merge(
+                [ds_insect, ds_bird], join='outer'
             )
         elif ds_insect:
             ds_new = ds_insect
@@ -192,7 +195,8 @@ def _read_vid_dataset(files, species):
 #         files,
 #         combine='nested',
 #         concat_dim='time',
-#         engine='h5netcdf',
+#         # engine='h5netcdf',
+#         engine='netcdf4',
 #         decode_cf=False
 #     )
 
@@ -202,7 +206,8 @@ def _read_vid_nc(files):
     for file in files:
         nc = xr.open_dataset(
             file,
-            engine='h5netcdf',
+            # engine='h5netcdf',
+            engine='netcdf4',
             decode_cf=False
         )
         ds += [nc]
