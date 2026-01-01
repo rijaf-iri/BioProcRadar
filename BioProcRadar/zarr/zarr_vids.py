@@ -204,15 +204,18 @@ def _read_vid_nc(files):
     ds = []
     dup = []
     for file in files:
-        nc = xr.open_dataset(
-            file,
-            # engine='h5netcdf',
-            engine='netcdf4',
-            decode_cf=False
-        )
-        ds += [nc]
-        lon = nc.get_index('lon')
-        dup += [lon.duplicated(keep='first')]
+        try:
+            nc = xr.open_dataset(
+                file,
+                # engine='h5netcdf',
+                engine='netcdf4',
+                decode_cf=False
+            )
+            ds += [nc]
+            lon = nc.get_index('lon')
+            dup += [lon.duplicated(keep='first')]
+        except:
+            continue
     dup = [any(d) for d in dup]
     ds = [ds[i] for i, d in enumerate(dup) if not d]
     if len(ds) == 0:
